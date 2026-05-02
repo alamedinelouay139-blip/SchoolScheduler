@@ -1,0 +1,173 @@
+You are tasked with designing a School Timetable Scheduling System using SQL Server.
+
+The system must generate a weekly timetable for a school while respecting strict constraints on classes, subjects, teachers, and time slots.
+
+---
+
+# Problem Overview
+
+The school contains multiple classes (grades). Each class has multiple subjects, and each subject requires a specific number of teaching hours per week.
+
+Each week consists of 5 days (Monday–Friday), and each day has 6 teaching hours. Therefore, each class must have exactly 30 scheduled lessons per week.
+
+---
+
+# Core Entities
+
+1. Classes (Grades)
+2. Subjects
+3. Teachers
+4. TimeSlots
+5. Schedule (final output)
+6. ClassSubjects (junction table)
+7. TeacherSubjects (junction table)
+8. TeacherAvailability
+
+---
+
+# Relationships
+
+* Class ↔ Subject = Many-to-Many (with required hours)
+* Teacher ↔ Subject = Many-to-Many
+* Teacher ↔ TimeSlot = Availability + scheduling constraints
+* Schedule connects: Class + Subject + Teacher + TimeSlot
+
+---
+
+# Business Rules / Constraints
+
+## Hard Constraints (must always be satisfied)
+
+1. Class Conflict:
+   A class cannot have more than one lesson in the same time slot.
+
+2. Teacher Conflict:
+   A teacher cannot teach more than one class at the same time.
+
+3. Teacher Availability:
+   Teachers can only be assigned to time slots where they are available.
+
+4. Teacher Weekly Load Limit:
+   Each teacher cannot exceed 25 teaching hours per week.
+
+5. Daily Break Constraint:
+   Each teacher must have at least one free period per day (cannot teach all 6 hours in a day).
+
+6. Subject Hour Requirement:
+   Each subject must be scheduled exactly the required number of hours per week for each class.
+
+7. Full Schedule Constraint:
+   Each class must have exactly 30 scheduled lessons per week (no empty slots).
+
+---
+
+## Soft Constraints (preferences)
+
+* Priority subjects (Math, English) should be scheduled early in the day.
+* Consecutive lessons for the same subject are preferred when multiple hours exist.
+
+---
+
+# Database Design (SQL Server)
+
+## 1. Classes
+
+* ClassID (PK)
+* ClassName (UNIQUE)
+
+---
+
+## 2. Subjects
+
+* SubjectID (PK)
+* SubjectName (UNIQUE)
+* Priority (BIT)
+
+---
+
+## 3. Teachers
+
+* TeacherID (PK)
+* TeacherName
+* MaxWeeklyHours (DEFAULT 25)
+
+---
+
+## 4. ClassSubjects
+
+Stores subject requirements per class.
+
+* ClassSubjectID (PK)
+* ClassID (FK)
+* SubjectID (FK)
+* RequiredHoursPerWeek
+* UNIQUE(ClassID, SubjectID)
+
+---
+
+## 5. TeacherSubjects
+
+Defines which teacher can teach which subject.
+
+* TeacherSubjectID (PK)
+* TeacherID (FK)
+* SubjectID (FK)
+* UNIQUE(TeacherID, SubjectID)
+
+---
+
+## 6. TimeSlots
+
+Represents all possible time slots.
+
+* TimeSlotID (PK)
+* Day (Monday–Friday)
+* Hour (1–6)
+* CHECK(Hour BETWEEN 1 AND 6)
+
+---
+
+## 7. TeacherAvailability
+
+Defines when a teacher is available.
+
+* AvailabilityID (PK)
+* TeacherID (FK)
+* TimeSlotID (FK)
+* IsAvailable (BIT)
+* UNIQUE(TeacherID, TimeSlotID)
+
+---
+
+## 8. Schedule (Core Table)
+
+Final timetable output.
+
+* ScheduleID (PK)
+* ClassID (FK)
+* SubjectID (FK)
+* TeacherID (FK)
+* TimeSlotID (FK)
+
+Constraints:
+
+* UNIQUE(ClassID, TimeSlotID) → prevents class conflict
+* UNIQUE(TeacherID, TimeSlotID) → prevents teacher conflict
+
+---
+
+# Important Notes
+
+* Database only stores structure and relationships.
+* All scheduling logic (constraints like:
+  teacher max hours, daily break, subject completion) MUST be handled in the algorithm layer (CSP / backtracking).
+* The system must validate every assignment before inserting into Schedule.
+
+---
+
+# Goal
+
+Build a complete timetable generator that assigns:
+(Class, Subject, Teacher) → (Day, Hour)
+
+while satisfying all constraints and optimizing soft preferences.

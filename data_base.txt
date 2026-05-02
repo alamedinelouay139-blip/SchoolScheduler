@@ -1,0 +1,156 @@
+1) First: extract the main entities (from the problem)
+
+From everything we discussed, we clearly have:
+
+Class (Grade)
+Subject
+Teacher
+TimeSlot
+Schedule (the result)
+Teacher Availability
+Class–Subject relation (VERY important)
+2) Now understand relationships (before tables)
+A) Class ↔ Subject
+A class has MANY subjects
+A subject exists in MANY classes
+
+👉 Many-to-Many → needs a junction table
+
+B) Teacher ↔ Subject
+A teacher can teach multiple subjects
+A subject can be taught by multiple teachers
+
+👉 Many-to-Many
+
+C) Teacher ↔ Availability
+Teacher has many unavailable/available slots
+
+👉 One-to-Many
+
+D) Schedule (central table)
+
+This is the most important:
+
+👉 It connects EVERYTHING:
+
+(Class, Subject, Teacher, Day, Hour)
+3) Now we convert to DATABASE TABLES
+1. Classes Table
+Classes
+-------
+ClassID (PK)
+ClassName
+2. Subjects Table
+Subjects
+--------
+SubjectID (PK)
+SubjectName
+Priority (optional: high for Math/English)
+3. Teachers Table
+Teachers
+--------
+TeacherID (PK)
+TeacherName
+MaxWeeklyHours (default = 25)
+4. ClassSubjects (VERY IMPORTANT)
+
+👉 This stores: how many hours each subject needs per class
+
+ClassSubjects
+-------------
+ClassSubjectID (PK)
+ClassID (FK)
+SubjectID (FK)
+RequiredHoursPerWeek
+5. TeacherSubjects
+
+👉 Which teacher can teach which subject
+
+TeacherSubjects
+---------------
+TeacherSubjectID (PK)
+TeacherID (FK)
+SubjectID (FK)
+6. TimeSlots
+
+👉 Define all possible slots
+
+TimeSlots
+---------
+TimeSlotID (PK)
+Day (Mon–Fri)
+Hour (1–6)
+7. TeacherAvailability
+
+👉 When teacher is AVAILABLE (or unavailable depending design)
+
+TeacherAvailability
+-------------------
+AvailabilityID (PK)
+TeacherID (FK)
+TimeSlotID (FK)
+IsAvailable (boolean)
+8. Schedule (THE CORE TABLE)
+
+🔥 This is your final result
+
+Schedule
+--------
+ScheduleID (PK)
+ClassID (FK)
+SubjectID (FK)
+TeacherID (FK)
+TimeSlotID (FK)
+4) VERY IMPORTANT constraints (you enforce in logic)
+
+Database alone is NOT enough. Your algorithm must ensure:
+
+✔ No class conflict
+No duplicate (ClassID, TimeSlotID)
+✔ No teacher conflict
+No duplicate (TeacherID, TimeSlotID)
+✔ Teacher availability
+Check TeacherAvailability before insert
+✔ Teacher max hours
+COUNT(Schedule WHERE TeacherID) <= 25
+✔ Daily break
+
+👉 For each teacher per day:
+
+Max 5 slots per day
+✔ Subject hours
+COUNT per (ClassID + SubjectID) = RequiredHours
+5) How everything connects (mental image)
+
+Think like this:
+
+Classes → what they need
+Subjects → what is taught
+Teachers → who can teach
+TimeSlots → when
+Schedule → final assignment
+6) Common mistake (be careful)
+
+❌ Putting everything in one table
+❌ Not using junction tables
+❌ Ignoring ClassSubjects (VERY important)
+We need ClassSubjects because:
+
+The number of hours for a subject is different for each class
+
+Now the deep explanation (important)
+
+Let’s test your thinking.
+
+❌ If we ONLY use Subjects table:
+Subjects:
+- Math
+- Arabic
+
+👉 Question:
+Where will you store:
+
+Grade 1 → Math = 5 hours
+Grade 2 → Math = 6 hours
+
+❌ You CANNOT

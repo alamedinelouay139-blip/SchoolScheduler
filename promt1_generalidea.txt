@@ -1,0 +1,98 @@
+You are asked to design and implement a School Timetable Scheduling System.
+
+The goal is to generate a weekly timetable for a school while respecting multiple constraints related to classes, subjects, teachers, and time slots.
+
+Problem Description:
+
+We have a school that contains multiple classes (grades). Each class has a set of subjects, and each subject requires a specific number of teaching hours per week.
+
+Each week consists of 5 days, and each day contains 6 teaching hours. Therefore, each class must have exactly 30 scheduled sessions per week.
+
+Entities:
+
+1. Classes:
+   Each class (e.g., Grade 1, Grade 2) has its own timetable.
+
+2. Subjects:
+   Each subject has a required number of hours per week for each class.
+   Example:
+
+* Math: 5 hours/week
+* Arabic: 10 hours/week
+
+3. Teachers:
+   Each teacher:
+
+* Can teach one or more subjects
+* Has a maximum teaching load of 25 hours per week
+* Has availability constraints (some time slots may be unavailable)
+* Must have at least one break per day (cannot teach all 6 hours in a single day)
+
+4. Time Slots:
+   Each time slot is defined by (day, hour), where:
+
+* Days: Monday to Friday
+* Hours: 1 to 6 per day
+
+Constraints:
+
+Hard Constraints (must always be satisfied):
+
+1. Class Conflict:
+   A class cannot have more than one subject scheduled at the same time.
+
+2. Teacher Conflict:
+   A teacher cannot teach more than one class at the same time.
+
+3. Teacher Availability:
+   A teacher can only be assigned to time slots where they are available.
+
+4. Teacher Load Limit:
+   A teacher cannot exceed 25 teaching hours per week.
+
+5. Daily Break Constraint:
+   Each teacher must have at least one free period (break) per day.
+   This means a teacher cannot be assigned to all 6 hours in a single day.
+
+6. Subject Hours:
+   Each subject must be scheduled exactly the required number of hours per week for each class.
+
+7. Full Timetable:
+   Each class must have exactly 30 scheduled sessions (no empty slots).
+
+Soft Constraints (preferences, not mandatory):
+
+1. Priority Subjects:
+   Subjects like Math and English should preferably be scheduled in early hours of the day.
+
+2. Consecutive Sessions:
+   If a subject requires multiple hours in the same day (e.g., 2 hours), they should be scheduled in consecutive time slots.
+
+Objective:
+
+The system should assign:
+(Class, Subject, Teacher) → to a valid (Day, Hour)
+
+Such that all hard constraints are satisfied and soft constraints are optimized as much as possible.
+
+Expected Approach:
+
+This problem should be treated as a Constraint Satisfaction Problem (CSP).
+
+A possible approach:
+
+* Iterate over classes
+* For each class, select subjects that still require hours
+* Select a valid teacher for the subject
+* Select a valid time slot (day, hour)
+* Before assigning, validate all constraints:
+
+  * Class is free at that time
+  * Teacher is free at that time
+  * Teacher is available at that time
+  * Teacher has not exceeded weekly limit (25 hours)
+  * Teacher still has at least one free slot available in the day (to ensure a break)
+* If all conditions are satisfied, assign the lesson
+* If a conflict occurs, try another option or use backtracking
+
+The final output should be a complete weekly timetable for each class, showing which subject and teacher is assigned to each time slot.
